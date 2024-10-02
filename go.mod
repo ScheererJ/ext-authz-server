@@ -1,6 +1,6 @@
 module github.com/gardener/ext-authz-server
 
-go 1.22.0
+go 1.23
 
 require (
 	github.com/envoyproxy/go-control-plane v0.11.1

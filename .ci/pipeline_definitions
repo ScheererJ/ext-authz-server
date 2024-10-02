@@ -2,7 +2,7 @@ ext-authz-server:
   base_definition:
     steps:
       verify:
-        image: 'golang:1.22.0'
+        image: 'golang:1.23.2'
     traits:
       component_descriptor:
         ocm_repository: europe-docker.pkg.dev/gardener-project/snapshots
