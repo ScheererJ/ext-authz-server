@@ -49,6 +49,7 @@ docker-push:
 tidy:
 	@GO111MODULE=on go mod tidy
 	@mkdir -p $(REPO_ROOT)/.ci/hack && cp $(GARDENER_HACK_DIR)/.ci/* $(REPO_ROOT)/.ci/hack/ && chmod +xw $(REPO_ROOT)/.ci/hack/*
+	@cp $(GARDENER_HACK_DIR)/sast.sh $(HACK_DIR)/sast.sh && chmod +xw $(HACK_DIR)/sast.sh
 
 .PHONY: check
 check: $(GOIMPORTS) $(GOLANGCI_LINT)
@@ -57,6 +58,20 @@ check: $(GOIMPORTS) $(GOLANGCI_LINT)
 .PHONY: format
 format: $(GOIMPORTS) $(GOIMPORTSREVISER)
 	@bash $(GARDENER_HACK_DIR)/format.sh ./cmd ./pkg
+
+# TODO(scheererj): Remove once https://github.com/gardener/gardener/pull/10642 is available as release.
+TOOLS_PKG_PATH := $(shell go list -tags tools -f '{{ .Dir }}' github.com/gardener/gardener/hack/tools 2>/dev/null)
+.PHONY: adjust-install-gosec.sh
+adjust-install-gosec.sh:
+	@chmod +xw $(TOOLS_PKG_PATH)/install-gosec.sh
+
+.PHONY: sast
+sast: adjust-install-gosec.sh $(GOSEC)
+	@./hack/sast.sh
+
+.PHONY: sast-report
+sast-report: adjust-install-gosec.sh $(GOSEC)
+	@./hack/sast.sh --gosec-report true
 
 .PHONY: test
 test:
@@ -71,7 +86,7 @@ test-cov-clean:
 	@bash $(GARDENER_HACK_DIR)/test-cover-clean.sh
 
 .PHONY: verify
-verify: check format test
+verify: check format test sast
 
 .PHONY: verify-extended
-verify-extended: check format test-cov test-cov-clean
+verify-extended: check format test-cov test-cov-clean sast-report

@@ -10,3 +10,6 @@ hack/tools/bin
 .cache_ggshield
 
 TODO
+
+# gosec
+gosec-report.sarif
